@@ -96,7 +96,6 @@ exports.getAllSauces = (req, res, next) => {
 };
 
 const addLike = (sauceId, userId) => {
-
   return Sauce.updateOne({
     _id: sauceId
   }, {
@@ -120,20 +119,18 @@ const disLike = (sauceId, userId) => {
     },
   })
 }
-
 const annuLike = (sauceId, userId) => {
   return Sauce.updateOne({
     _id: sauceId
   }, {
     $pull: {
-      usersDisliked: userId
+      usersLiked: userId
     },
     $inc: {
       likes: -1
     },
   })
 }
-
 const annulDislike = (sauceId, userId) => {
   return Sauce.updateOne({
     _id: sauceId
@@ -146,7 +143,6 @@ const annulDislike = (sauceId, userId) => {
     },
   })
 }
-
 exports.likeDislike = async (req, res, next) => {
   let like = req.body.like
   let userId = req.body.userId
@@ -155,27 +151,37 @@ exports.likeDislike = async (req, res, next) => {
   try {
     if (like === 1) {
       await addLike(sauceId, userId)
-      res.status(200).json({ message: 'j\'aime ajouté !'})
-    }
-    else if (like === -1) {
+      res.status(200).json({
+        message: 'j\'aime ajouté !'
+      })
+    } else if (like === -1) {
       await disLike(sauceId, userId)
-      res.status(200).json({ message: 'Dislike ajouté !'})
-    }
-    else if (like === 0) {
-      const sauce = await Sauce.findOne({_id: sauceId })
+      res.status(200).json({
+        message: 'Dislike ajouté !'
+      })
+    } else if (like === 0) {
+      const sauce = await Sauce.findOne({
+        _id: sauceId
+      })
       if (sauce === null) {
-        return res.status(404).json({ error })
-      }
-      else if (sauce.usersLiked.includes(userId)) {
+        return res.status(404).json({
+          error: 'sauce non trouvée'
+        })
+      } else if (sauce.usersLiked.includes(userId)) {
         await annuLike(sauceId, userId)
-        res.status(200).json({ message: 'Like annulé' })
-      }
-      else if (sauce.usersDisliked.includes(userId)) {
+        res.status(200).json({
+          message: 'Like annulé'
+        })
+      } else if (sauce.usersDisliked.includes(userId)) {
         await annulDislike(sauceId, userId)
-        res.status(200).json({ message: 'Dislike annulé'})
+        res.status(200).json({
+          message: 'Dislike annulé'
+        })
       }
     }
   } catch (error) {
-    res.status(404).json({ error })
+    res.status(404).json({
+      error
+    })
   }
 }
